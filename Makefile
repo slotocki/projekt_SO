@@ -1,33 +1,31 @@
+# Kompilator i flagi
 CC     = gcc
 CFLAGS = -Wall -Wextra -std=c99
 
-all: dyspozytor kapitan_lotu pasazer
+# Nazwy docelowych programów
+TARGETS = dyspozytor kapitan_lotu pasazer
 
+# Pliki źródłowe
+DYSP_SRC = dyspozytor.c semafor.c common.c
+KAPT_SRC = kapitan_lotu.c semafor.c common.c
+PASZ_SRC = pasazer.c semafor.c common.c
 
-dyspozytor: dyspozytor.o semafor.o
+# Domyślny cel
+all: $(TARGETS)
+
+# Reguły budowania poszczególnych programów
+dyspozytor: $(DYSP_SRC)
 	$(CC) $(CFLAGS) -o $@ $^
 
-dyspozytor.o: dyspozytor.c common.h semafor.h
-	$(CC) $(CFLAGS) -c dyspozytor.c
-
-
-kapitan_lotu: kapitan_lotu.o semafor.o
+kapitan_lotu: $(KAPT_SRC)
 	$(CC) $(CFLAGS) -o $@ $^
 
-kapitan_lotu.o: kapitan_lotu.c common.h semafor.h
-	$(CC) $(CFLAGS) -c kapitan_lotu.c
-
-
-pasazer: pasazer.o semafor.o
+pasazer: $(PASZ_SRC)
 	$(CC) $(CFLAGS) -o $@ $^
 
-pasazer.o: pasazer.c common.h semafor.h
-	$(CC) $(CFLAGS) -c pasazer.c
-
-
-semafor.o: semafor.c semafor.h common.h
-	$(CC) $(CFLAGS) -c semafor.c
-
-
+# Cel czyszczący
 clean:
-	rm -f *.o dyspozytor kapitan_lotu pasazer
+	rm -f $(TARGETS)
+
+# Określenie celów specjalnych
+.PHONY: all clean
