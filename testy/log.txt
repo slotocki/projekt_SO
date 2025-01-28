@@ -1,0 +1,83 @@
+[Pasażer 647099] płeć=Mężczyzna, VIP=TAK, niebezp=TAK, waga=8
+[32m[Pasażer 647099] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647099] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647099 
+[Pasażer 647099] Sprawdzam stanowiska kontroli...
+[Pasażer 647099] Wchodzę na stanowisko kontroli 1 (aktualnie 1 osób tam, płeć: Mężczyzna).
+[Pasażer 647099] Wykryto niebezpieczny przedmiot => odrzucony!
+[Pasażer 647114] płeć=Mężczyzna, VIP=NIE, niebezp=NIE, waga=6
+[32m[Pasażer 647114] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647114] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647114 
+[Pasażer 647114] Sprawdzam stanowiska kontroli...
+[Pasażer 647114] Wchodzę na stanowisko kontroli 1 (aktualnie 2 osób tam, płeć: Mężczyzna).
+[Pasażer 647114] Kończę kontrolę => stanowisko=1
+[Pasażer 647114] Opuszczam kontrolę na stanowisku 1.
+[Pasażer 647114] W hali => bramka normal.
+Kolejka Hala normalna (liczba=3): 647073 647082 647114 
+[35m[Pasażer 647114] Przechodzę przez gate => schody.
+[0m[Pasażer 647114] Wsiadam do samolotu => w_sam=1.
+[Pasażer 647179] płeć=Kobieta, VIP=NIE, niebezp=TAK, waga=8
+[32m[Pasażer 647179] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647179] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647179 
+[Pasażer 647179] Sprawdzam stanowiska kontroli...
+[Pasażer 647179] Wchodzę na stanowisko kontroli 2 (aktualnie 2 osób tam, płeć: Kobieta).
+[Pasażer 647179] Wykryto niebezpieczny przedmiot => odrzucony!
+[Pasażer 647111] płeć=Kobieta, VIP=NIE, niebezp=NIE, waga=6
+[32m[Pasażer 647111] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647111] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647111 
+[Pasażer 647111] Sprawdzam stanowiska kontroli...
+[Pasażer 647111] Wchodzę na stanowisko kontroli 2 (aktualnie 1 osób tam, płeć: Kobieta).
+[Pasażer 647111] Kończę kontrolę => stanowisko=2
+[Pasażer 647111] Opuszczam kontrolę na stanowisku 2.
+[Pasażer 647111] W hali => bramka normal.
+Kolejka Hala normalna (liczba=4): 647114 647073 647082 647111 
+[35m[Pasażer 647111] Przechodzę przez gate => schody.
+[0m[Pasażer 647111] Wsiadam do samolotu => w_sam=2.
+[Pasażer 647144] płeć=Mężczyzna, VIP=NIE, niebezp=NIE, waga=8
+[32m[Pasażer 647144] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647144] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647144 
+[Pasażer 647144] Sprawdzam stanowiska kontroli...
+[Pasażer 647144] Wchodzę na stanowisko kontroli 0 (aktualnie 1 osób tam, płeć: Mężczyzna).
+[Pasażer 647144] Kończę kontrolę => stanowisko=0
+[Pasażer 647144] Opuszczam kontrolę na stanowisku 0.
+[Pasażer 647144] W hali => bramka normal.
+Kolejka Hala normalna (liczba=4): 647073 647082 647111 647144 
+[35m[Pasażer 647144] Przechodzę przez gate => schody.
+[0m[Pasażer 647144] Wsiadam do samolotu => w_sam=3.
+[Pasażer 647171] płeć=Mężczyzna, VIP=TAK, niebezp=NIE, waga=7
+[32m[Pasażer 647171] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647171] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=2): 647144 647171 
+[Pasażer 647171] Sprawdzam stanowiska kontroli...
+[Pasażer 647171] Wchodzę na stanowisko kontroli 0 (aktualnie 2 osób tam, płeć: Mężczyzna).
+[Pasażer 647171] Kończę kontrolę => stanowisko=0
+[Pasażer 647171] Opuszczam kontrolę na stanowisku 0.
+[Pasażer 647171] W hali => bramka VIP.
+Kolejka Hala VIP (liczba=1): 647171 
+[35m[Pasażer 647171] Przechodzę przez gate => schody.
+[0m[Pasażer 647171] Wsiadam do samolotu => w_sam=4.
+[Pasażer 647174] płeć=Mężczyzna, VIP=TAK, niebezp=NIE, waga=6
+[32m[Pasażer 647174] Odprawa OK (bagaż <= 12)
+[0m[Pasażer 647174] Dołączam do kolejki kontroli bezpieczeństwa.
+Kolejka kontroli (liczba=1): 647174 
+[Pasażer 647174] Sprawdzam stanowiska kontroli...
+[Pasażer 647174] Wchodzę na stanowisko kontroli 1 (aktualnie 2 osób tam, płeć: Mężczyzna).
+[Pasażer 647174] Kończę kontrolę => stanowisko=1
+[Pasażer 647174] Opuszczam kontrolę na stanowisku 1.
+[Pasażer 647174] W hali => bramka VIP.
+Kolejka Hala VIP (liczba=1): 647174 
+[35m[Pasażer 647174] Przechodzę przez gate => schody.
+[0m[Pasażer 647174] Wsiadam do samolotu => w_sam=5.
+[Dyspozytor] Otrzymano SIGINT => przerwanie generowania pasażerów.
+[Kapitan] Opóźnię start pierwszego samolotu o 10 sekund...
+[33m[Kapitan] Gate otwarty dla samolotu 0 (Md=10)
+[0m[Kapitan] Otrzymano SIGINT => rezygnuję (samolot 0).
+[Kapitan] Kończę pracę.
+[Dyspozytor] Parametry: P=5, K=2, T1=20, N=4.
+[Dyspozytor] md_for_plane=[10,12,8,11], max_bagaz_limit=12
+[33m[Dyspozytor] Uruchomiono kapitan_lotu PID=647072 (samolot=0)
+[0m[Dyspozytor] Zakończono.

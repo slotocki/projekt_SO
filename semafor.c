@@ -65,13 +65,38 @@ void semafor_op(int semid, int semnum, int operacja)
     sb.sem_op  = operacja;
     sb.sem_flg = 0;
 
-    if (semop(semid, &sb, 1) == -1) {
-        perror("Blad semop");
-    }
+    int retval;
+    do {
+        retval = semop(semid, &sb, 1);
+        if(retval == -1 && errno != EINTR) {
+            perror("Blad semop");
+            break;  
+        }
+    } while(retval == -1 && errno == EINTR);
 }
 void usun_semafory(int semid)
 {
     if (semctl(semid, 0, IPC_RMID) == -1) {
         perror("Blad semctl(IPC_RMID)");
     }
+}
+
+
+
+int semafor_op_ret(int semid, int semnum, int operacja, int flags) {
+    struct sembuf sb;
+    sb.sem_num = semnum;
+    sb.sem_op  = operacja;
+    sb.sem_flg = flags;  
+
+    int retval;
+    do {
+        retval = semop(semid, &sb, 1);
+        if(retval == -1 && errno != EINTR) {
+            perror("Błąd semop w semafor_op_ret");
+            break;
+        }
+    } while(retval == -1 && errno == EINTR);
+
+    return retval;
 }

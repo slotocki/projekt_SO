@@ -1,6 +1,6 @@
 # Kompilator i flagi
 CC     = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -w
 
 # Nazwy docelowych programów
 TARGETS = dyspozytor kapitan_lotu pasazer
