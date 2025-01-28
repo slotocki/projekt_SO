@@ -41,7 +41,6 @@ static void signalQueueChange(int semid) {
 }
 
 int main(int argc, char *argv[]) {
-    signal(SIGINT, sig_stop);
     srand(time(NULL) ^ getpid());
 
     int sem_count = SEM_COUNT; 
@@ -74,7 +73,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    /* Dostęp do kolejki komunikatów (VIP + heavy) */
+    /* Dostęp do kolejki komunikatów VIP */
     int vip_qid = msgget(VIP_QUEUE_KEY, IPC_CREAT | 0666);
     if(vip_qid == -1) {
         perror("[Pasażer] msgget VIP queue");
@@ -96,7 +95,18 @@ int main(int argc, char *argv[]) {
     }
 
     // Losujemy wagę bagażu 6..12
-    int waga_bagazu = 7 + (rand() % 7);
+    //int waga_bagazu = 4 + (rand() % 10);
+    
+   
+    //TEST
+    int waga_bagazu;
+    if (vip) {
+	    waga_bagazu = 6 + (rand() % 8); 
+    }
+    else {
+    waga_bagazu = (rand () % 10);
+    
+    }
     printf("[Pasażer %d] płeć=%s, VIP=%s, niebezp=%s, waga=%d\n",
            getpid(),
            (czy_kobieta ? "Kobieta" : "Mężczyzna"),
@@ -105,7 +115,7 @@ int main(int argc, char *argv[]) {
            waga_bagazu);
 
     if(waga_bagazu > maxLimit) {
-        printf(RED "[Pasażer %d]" RESET " Bagaż=%d > globalnyLimit=%d => odrzucony.\n",
+        printf(RED "[Pasażer %d]" RESET " Bagaż=%d > Limit=%d => odrzucony.\n",
                getpid(), waga_bagazu, maxLimit);
         pasazerKoniec(wspolne, semid);
         odlacz_pamiec_dzielonej(wspolne);
@@ -134,9 +144,9 @@ int main(int argc, char *argv[]) {
 
     pushKolejka(&wspolne->kolejka_kontrola, e);
     printf("[Pasażer %d] Dołączam do kolejki kontroli bezpieczeństwa.\n", getpid());
-   
+    wyswietl_kolejke("Kolejka kontroli", &wspolne->kolejka_kontrola);
 
-    signalQueueChange(semid); 
+    signalQueueChange(semid); // informujemy czekających pasażerów/procesy
     semafor_op(semid, SEM_IDX_MUTEX, 1);
 
     /* Oczekiwanie w kolejce do kontroli bezpieczeństwa */
@@ -161,6 +171,7 @@ int main(int argc, char *argv[]) {
                     signalQueueChange(semid);  
                     semafor_op(semid, SEM_IDX_Q_KONTROLA_SPACE, 1); 
                     semafor_op(semid, SEM_IDX_MUTEX, 1);
+
                     naPrzodzie = false;
                 } else {
                     semafor_op(semid, SEM_IDX_MUTEX, 1);
@@ -172,7 +183,7 @@ int main(int argc, char *argv[]) {
                     if(e.przepuszczenia > 3) {
                         e.niebezpieczny = true;
                     }
-                    printf("[Pasażer %d] Przepuszczam osobę %d. (Przepuszczeń=%d, niebezpieczny=%s)\n",
+                    printf("[Pasażer %d] Przepuszczam osobę %d. (Przepuszczeń: %d, niebezpieczny: %s)\n",
                            getpid(), f.pid, e.przepuszczenia,
                            (e.niebezpieczny ? "TAK" : "NIE"));
                     moveFrontToBack(&wspolne->kolejka_kontrola);
@@ -184,6 +195,7 @@ int main(int argc, char *argv[]) {
             semafor_op(semid, SEM_IDX_MUTEX, 1);
         }
 
+        // Brak sleep(1) czekamy na semafor)
         if(naPrzodzie) {
             semafor_op(semid, SEM_IDX_Q_KONTROLA_CHANGED, -1);
         }
@@ -206,22 +218,20 @@ int main(int argc, char *argv[]) {
             int ile = wspolne->stanowiska[i].ile_osob;
             Plec pl = wspolne->stanowiska[i].plec_obecna;
             if(ile < MAX_OSOBY_STANOWISKO && (ile == 0 || pl == e.plec)) {
-                // rezerwujemy 1 wolne miejsce
                 semafor_op(semid, SEM_IDX_STANOWISKA + i, -1);
                 wspolne->stanowiska[i].ile_osob++;
                 if(wspolne->stanowiska[i].ile_osob == 1) {
                     wspolne->stanowiska[i].plec_obecna = e.plec;
                 }
-                printf("[Pasażer %d] Wchodzę na stanowisko kontroli %d (aktualnie %d osób tam).\n",
-                       getpid(), i, wspolne->stanowiska[i].ile_osob);
+                printf("[Pasażer %d] Wchodzę na stanowisko kontroli %d (aktualnie %d osób tam, płeć: %s).\n",
+                       getpid(), i, wspolne->stanowiska[i].ile_osob,
+                       (wspolne->stanowiska[i].plec_obecna == PLEC_KOBIETA ? "Kobieta" : "Mężczyzna"));
                 semafor_op(semid, SEM_IDX_MUTEX, 1);
 
-                // Symulacja kontroli
-                //sleep(2 + rand() % 3);
+                 sleep(3 + rand() % 5);
 
                 if(e.niebezpieczny) {
                     printf("[Pasażer %d] Wykryto niebezpieczny przedmiot, odrzucony!\n", getpid());
-                    // Zwolnienie stanowiska
                     semafor_op(semid, SEM_IDX_MUTEX, -1);
                     wspolne->stanowiska[i].ile_osob--;
                     if(wspolne->stanowiska[i].ile_osob == 0) {
@@ -256,7 +266,6 @@ int main(int argc, char *argv[]) {
             }
         }
         if(!wKontroli) {
-            // nie znaleziono wolnego stanowiska zgodnego z płcią
             semafor_op(semid, SEM_IDX_MUTEX, 1);
         }
     }
@@ -268,7 +277,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    /* W hali odlotów => do bramki VIP lub normal */
+    /* W hali odlotów */
     semafor_op(semid, SEM_IDX_MUTEX, -1);
     Kolejka *docelowa_kolejka = (e.vip ? &wspolne->gate.vip_queue : &wspolne->gate.normal_queue);
     if(docelowa_kolejka->liczba >= ROZMIAR_KOLEJKI) {
@@ -279,7 +288,15 @@ int main(int argc, char *argv[]) {
         odlacz_pamiec_dzielonej(wspolne);
         return 0;
     }
+
     pushKolejka(docelowa_kolejka, e);
+    if(e.vip) {
+        printf("[Pasażer %d] W hali => bramka VIP.\n", getpid());
+        wyswietl_kolejke("Kolejka Hala VIP", &wspolne->gate.vip_queue);
+    } else {
+        printf("[Pasażer %d] W hali => bramka normal.\n", getpid());
+        wyswietl_kolejke("Kolejka Hala normalna", &wspolne->gate.normal_queue);
+    }
     semafor_op(semid, SEM_IDX_MUTEX, 1);
 
     /* Oczekiwanie na otwarty gate i wchodzenie na pokład */
@@ -292,12 +309,11 @@ int main(int argc, char *argv[]) {
         semafor_op(semid, SEM_IDX_MUTEX, 1);
 
         if(!open || closed) {
-            // gate zamknięty => czekamy
             semafor_op(semid, SEM_IDX_GATE_CHANGE, -1);
             continue;
         }
 
-        /* Czy jesteśmy na przodzie właściwej kolejki? (VIP ma priorytet) */
+        /* Sprawdzamy, czy jesteśmy na przodzie właściwej kolejki */
         semafor_op(semid, SEM_IDX_MUTEX, -1);
         bool im_front = false;
         if(e.vip) {
@@ -308,7 +324,6 @@ int main(int argc, char *argv[]) {
                 }
             }
         } else {
-            // zwykły pasażer może wejść dopiero, gdy VIP kolejka jest pusta
             if(wspolne->gate.vip_queue.liczba == 0 && wspolne->gate.normal_queue.liczba > 0) {
                 ElemKolejki f_nrm = frontKolejka(&wspolne->gate.normal_queue);
                 if(f_nrm.pid == getpid()) {
@@ -319,82 +334,74 @@ int main(int argc, char *argv[]) {
         semafor_op(semid, SEM_IDX_MUTEX, 1);
 
         if(!im_front) {
-            // czekamy chwilę
-            sleep(1);
+         sleep(1);
             continue;
         }
 
-        /* Sprawdzamy bieżący limit Md samolotu */
+        /* Sprawdzenie limitu bagażu w bieżącym samolocie */
         semafor_op(semid, SEM_IDX_MUTEX, -1);
         if(e.waga_bagazu > current_md) {
-            printf(RED "[Pasażer %d] " RESET 
-                   "Bagaż=%d > Md=%d => czekam na kolejny samolot (odkładam do kolejki komunikatów)\n",
+            printf(RED "[Pasażer %d] " RESET "Bagaż=%d > Md=%d => nie wchodzę, czekam na kolejny samolot!\n",
                    getpid(), e.waga_bagazu, current_md);
 
-            // Zdejmij z kolejki bramki
             if(e.vip) {
                 popKolejka(&wspolne->gate.vip_queue);
+                VipKolejkaKom vmsg;
+                vmsg.mtype = 1; 
+                vmsg.vip_elem = e;
+                if(msgsnd(vip_qid, &vmsg, sizeof(vmsg) - sizeof(long), IPC_NOWAIT) == -1) {
+                    printf("[Pasażer %d] Lista oczekujących VIP pełna, nie mogę dodać!\n", getpid());
+                } else {
+                    printf("[Pasażer %d] Dodany do oczekujących VIP.\n", getpid());
+                }
             } else {
                 popKolejka(&wspolne->gate.normal_queue);
+                pushKolejka(&wspolne->gate.normal_queue, e);
             }
-
-            // Wysyłamy do kolejki komunikatów System V
-            WaitingQueueMsg msg;
-            msg.mtype = 1;
-            msg.vip_elem = e;
-            if(msgsnd(vip_qid, &msg, sizeof(msg) - sizeof(long), IPC_NOWAIT) == -1) {
-                printf("[Pasażer %d] Kolejka komunikatów pełna. Rezygnuję z wejścia.\n", getpid());
-                semafor_op(semid, SEM_IDX_MUTEX, 1);
-                pasazerKoniec(wspolne, semid);
-                odlacz_pamiec_dzielonej(wspolne);
-                return 0;
-            }
-
             semafor_op(semid, SEM_IDX_MUTEX, 1);
 
-            // Oczekiwanie na ponowne otwarcie gate => identycznie jak VIP
+            /* Oczekiwanie na ponowne otwarcie bramki do kolejnego samolotu */
             semafor_op(semid, SEM_IDX_VIP_WAIT, -1);
             continue;
         }
         semafor_op(semid, SEM_IDX_MUTEX, 1);
 
-        /* Próbujemy (nieblokująco) zająć miejsce w samolocie + schodach */
+        /* Próbujemy nieblokująco zająć semafory (POJEMNOSC i SCHODY) */
         struct sembuf ops[2];
-        ops[0].sem_num = SEM_IDX_POJEMNOSC; // wolne miejsca w samolocie
+        ops[0].sem_num = SEM_IDX_POJEMNOSC;
         ops[0].sem_op  = -1;
         ops[0].sem_flg = IPC_NOWAIT;
 
-        ops[1].sem_num = SEM_IDX_SCHODY;    // wolne miejsce na schodach
+        ops[1].sem_num = SEM_IDX_SCHODY;
         ops[1].sem_op  = -1;
         ops[1].sem_flg = IPC_NOWAIT;
 
         if(semop(semid, ops, 2) == -1) {
             if(errno == EAGAIN) {
-                printf("[Pasażer %d] Samolot lub schody pełne => odkładam do kolejki komunikatów.\n",
-                       getpid());
-                // Zdejmij z kolejki bramki
+                printf("[Pasażer %d] Samolot (lub schody) pełne.\n", getpid());
+                
                 semafor_op(semid, SEM_IDX_MUTEX, -1);
                 if(e.vip) {
                     popKolejka(&wspolne->gate.vip_queue);
+
+                    VipKolejkaKom vmsg;
+                    vmsg.mtype = 1; 
+                    vmsg.vip_elem = e;
+                    if(msgsnd(vip_qid, &vmsg, sizeof(vmsg) - sizeof(long), IPC_NOWAIT) == -1) {
+                        printf("[Pasażer %d] Lista oczekujących VIP pełna. Rezygnuję z wejścia.\n", getpid());
+                        semafor_op(semid, SEM_IDX_MUTEX, 1);
+                        pasazerKoniec(wspolne, semid);
+                        odlacz_pamiec_dzielonej(wspolne);
+                        return 0;
+                    }
+                    printf("[Pasażer %d] Przeniesiony do oczekujących VIP.\n", getpid());
                 } else {
                     popKolejka(&wspolne->gate.normal_queue);
-                }
-
-                // Wysyłamy do kolejki komunikatów
-                WaitingQueueMsg msg;
-                msg.mtype = 1;
-                msg.vip_elem = e;
-                if(msgsnd(vip_qid, &msg, sizeof(msg) - sizeof(long), IPC_NOWAIT) == -1) {
-                    printf("[Pasażer %d] Kolejka komunikatów pełna. Rezygnuję.\n", getpid());
-                    semafor_op(semid, SEM_IDX_MUTEX, 1);
-                    pasazerKoniec(wspolne, semid);
-                    odlacz_pamiec_dzielonej(wspolne);
-                    return 0;
+                    pushKolejka(&wspolne->gate.normal_queue, e);
+                    wyswietl_kolejke("Kolejka Hala normalna", &wspolne->gate.normal_queue);
                 }
 
                 semafor_op(semid, SEM_IDX_MUTEX, 1);
-
-                // czekamy na kolejny samolot
                 semafor_op(semid, SEM_IDX_VIP_WAIT, -1);
                 continue;
             } else {
@@ -405,29 +412,21 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        /* Sprawdzamy, czy gate nadal otwarty (mogło się zamknąć w międzyczasie) */
-        semafor_op(semid, SEM_IDX_MUTEX, -1);
-        bool nadal_otwarte = (!wspolne->gate_closed_for_this_plane && wspolne->gate.open);
-        if(!nadal_otwarte) {
-            // Gate się zamknął => zwracamy semafory
-            semafor_op(semid, SEM_IDX_POJEMNOSC, 1);
-            semafor_op(semid, SEM_IDX_MUTEX, 1);
-            continue;
-        }
-        // Zdejmujemy się z kolejki gate
+        /* Usuwamy się z kolejki gate */
         if(e.vip) {
             popKolejka(&wspolne->gate.vip_queue);
         } else {
             popKolejka(&wspolne->gate.normal_queue);
         }
 
+        semafor_op(semid, SEM_IDX_MUTEX, -1);
         wspolne->liczba_pasazerow_na_schodach++;
+        printf(MAGENTA "[Pasażer %d] " RESET "Przechodzę przez gate => schody.\n", getpid());
         semafor_op(semid, SEM_IDX_MUTEX, 1);
 
-        // "Wejście na schody"
-        usleep(100);
+        sleep(1);
 
-        // Zdejmowanie pasażera ze schodów + dodanie do samolotu
+        /* Zdejmowanie pasażera ze schodów i dodawanie go do samolotu */
         semafor_op(semid, SEM_IDX_MUTEX, -1);
         wspolne->liczba_pasazerow_na_schodach--;
         if(wspolne->liczba_pasazerow_na_schodach == 0) {
@@ -439,8 +438,8 @@ int main(int argc, char *argv[]) {
 
         semafor_op(semid, SEM_IDX_SCHODY, 1);
 
-        printf("[Pasażer %d] Wsiadam do samolotu, w samolocie=%d.\n", getpid(), inside);
-        break; // dotarliśmy do samolotu => koniec pętli
+        printf("[Pasażer %d] Wsiadam do samolotu, w samolocie =%d.\n", getpid(), inside);
+        break;
     }
 
     pasazerKoniec(wspolne, semid);

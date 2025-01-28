@@ -125,7 +125,6 @@ typedef struct {
     long mtype;           
     ElemKolejki vip_elem; /* stan pasażera VIP */
 } VipKolejkaKom;
-typedef VipKolejkaKom WaitingQueueMsg;
 
 
 void pushKolejka(Kolejka *k, ElemKolejki e);
