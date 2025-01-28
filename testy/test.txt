@@ -1,1 +1,12 @@
+<<<<<<< HEAD
 
+=======
+ 
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+0x00000000 36208647   lotocki.sy 666        2600       1          dest         
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+0x00000000 36175911   lotocki.sy 666        2600       5          dest         
+>>>>>>> a19a74a1de752a7d24e6f2feacdee50a34677c02
